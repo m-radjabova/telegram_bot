@@ -1,0 +1,14 @@
+# Ignore environment files
+.env
+.env.*
+
+# Python cache va vaqtinchalik fayllar
+__pycache__/
+*.pyc
+
+# IDE va muharrir fayllari
+.vscode/
+.idea/
+
+# Virtual muhit
+venv/
