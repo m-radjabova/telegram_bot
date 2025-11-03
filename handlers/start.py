@@ -1,34 +1,38 @@
-from aiogram import Router, types
+from aiogram import Router, Bot
+from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup
 from aiogram.filters import CommandStart
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
-from pydoc import html
+from aiogram.utils.markdown import hlink
+from config import BOT_TOKEN, CHANNEL_ID
 
 router = Router()
+bot = Bot(token=BOT_TOKEN)
 
 @router.message(CommandStart())
-async def command_start_handler(message: Message) -> None:
+async def command_start_handler(message: Message):
+    user_id = message.from_user.id
     user_name = message.from_user.full_name
 
-    keyboard = ReplyKeyboardMarkup(
-        keyboard=[
-            [KeyboardButton(text="🌅 Nature"), KeyboardButton(text="🐱 Animals")],
-            [KeyboardButton(text="🚗 Cars"), KeyboardButton(text="🍔 Food")],
-            [KeyboardButton(text="🏠 Architecture"), KeyboardButton(text="👨‍💻 Technology")],
-            [KeyboardButton(text="🎲 Tasodifiy"), KeyboardButton(text="ℹ️ Yordam")]
-        ],
-        resize_keyboard=True,
-        input_field_placeholder="So'z yozing yoki tugmalardan birini bosing"
-    )
+    try:
+        member = await bot.get_chat_member(chat_id=CHANNEL_ID, user_id=user_id)
 
-    text = (
-        f"👋 Salom, {html.escape(user_name)}!\n\n"
-        "🖼️ <b>Rasm Qidiruv Botiga xush kelibsiz!</b>\n\n"
-        "📸 Men sizga turli mavzulardagi sifatli rasmlarni topib beraman.\n\n"
-        "🔍 <b>Qanday foydalanish:</b>\n"
-        "• Istalgan so'z yozing (masalan: <code>sunset</code>)\n"
-        "• Pastdagi kategoriya tugmalaridan foydalaning\n"
-        "• Yoki <code>/commands</code> yozib barcha buyruqlarni ko'ring\n\n"
-        "🚀 Hozir sinab ko'ring!"
-    )
+        if member.status in ["member", "administrator", "creator"]:
+            text = f"👋 Salom, {user_name}!\nQuyidagilardan birini tanlang:"
 
-    await message.answer(text, reply_markup=keyboard)
+            buttons = [
+                [
+                    KeyboardButton(text="🏢 Ish joy kerak"),
+                    KeyboardButton(text="👷 Xodim kerak")
+                ]
+            ]
+            keyboard = ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
+
+            await message.answer(text, reply_markup=keyboard)
+        else:
+            raise Exception("not_subscribed")
+
+    except Exception as e:
+        link = f"https://t.me/{CHANNEL_ID.replace('@','')}"
+        await message.answer(
+            f"⚠️ Iltimos, 📢 <a href='{link}'>kanalga obuna bo‘ling</a> va qayta /start bosing.",
+            parse_mode="HTML"
+        )
