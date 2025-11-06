@@ -1,38 +1,47 @@
-from aiogram import Router, Bot
-from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup
+from aiogram import Router, types, F
 from aiogram.filters import CommandStart
-from aiogram.utils.markdown import hlink
-from config import BOT_TOKEN, CHANNEL_ID
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, CallbackQuery
+from pydoc import html
+from config import channels
+
+from filter.channel_midleware import SubscriptionMiddleware
+from main import dp, bot
 
 router = Router()
-bot = Bot(token=BOT_TOKEN)
+
+async def check_sub_channels(user_id):
+    result = True
+    for channel in channels:
+        chat_member = await bot.get_chat_member(chat_id=channel, user_id=user_id)
+        if chat_member.status == "left":
+            result = False
+    return result
+
+
+@dp.callback_query(F.data == "check_subs")
+async def check_subs_callback(callback: CallbackQuery):
+    print("jefhijknvhksdv ")
+    if await check_sub_channels(callback.from_user.id):
+        await callback.message.edit_text("✅ Rahmat! Siz barcha kanallarga obuna bo‘ldingiz.")
+    else:
+        await callback.answer("❌ Siz hali barcha kanallarga a'zo bo‘lmagansiz!", show_alert=True)
+
 
 @router.message(CommandStart())
-async def command_start_handler(message: Message):
-    user_id = message.from_user.id
+async def command_start_handler(message: Message) -> None:
     user_name = message.from_user.full_name
 
-    try:
-        member = await bot.get_chat_member(chat_id=CHANNEL_ID, user_id=user_id)
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="Qarz Berish"), KeyboardButton(text="Qarzlar ro'yxati")],
+            [KeyboardButton(text="Qarzni o'chirish(To'lash)")],
+        ],
+        resize_keyboard=True,
+        input_field_placeholder="So'z yozing yoki tugmalardan birini bosing"
+    )
 
-        if member.status in ["member", "administrator", "creator"]:
-            text = f"👋 Salom, {user_name}!\nQuyidagilardan birini tanlang:"
+    text = (
+        f"👋 Salom, {html.escape(user_name)}!\n\n"
+    )
 
-            buttons = [
-                [
-                    KeyboardButton(text="🏢 Ish joy kerak"),
-                    KeyboardButton(text="👷 Xodim kerak")
-                ]
-            ]
-            keyboard = ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
-
-            await message.answer(text, reply_markup=keyboard)
-        else:
-            raise Exception("not_subscribed")
-
-    except Exception as e:
-        link = f"https://t.me/{CHANNEL_ID.replace('@','')}"
-        await message.answer(
-            f"⚠️ Iltimos, 📢 <a href='{link}'>kanalga obuna bo‘ling</a> va qayta /start bosing.",
-            parse_mode="HTML"
-        )
+    await message.answer(text, reply_markup=keyboard)
