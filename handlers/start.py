@@ -1,14 +1,13 @@
+# handlers/start.py
 from aiogram import Router, types, F
 from aiogram.filters import CommandStart
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, CallbackQuery
-from pydoc import html
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from config import channels
-
-from filter.channel_midleware import SubscriptionMiddleware
-from main import dp, bot
+from main import bot  # faqat bot kerak, dp kerak emas
 
 router = Router()
 
+# --- Kanalga obuna tekshirish ---
 async def check_sub_channels(user_id):
     result = True
     for channel in channels:
@@ -18,30 +17,29 @@ async def check_sub_channels(user_id):
     return result
 
 
-@dp.callback_query(F.data == "check_subs")
+# --- "Obunani tekshirish" tugmasi ---
+@router.callback_query(F.data == "check_subs")
 async def check_subs_callback(callback: CallbackQuery):
-    print("jefhijknvhksdv ")
     if await check_sub_channels(callback.from_user.id):
         await callback.message.edit_text("✅ Rahmat! Siz barcha kanallarga obuna bo‘ldingiz.")
     else:
         await callback.answer("❌ Siz hali barcha kanallarga a'zo bo‘lmagansiz!", show_alert=True)
 
 
+# --- /start komandasi ---
 @router.message(CommandStart())
-async def command_start_handler(message: Message) -> None:
+async def command_start_handler(message: types.Message):
     user_name = message.from_user.full_name
 
-    keyboard = ReplyKeyboardMarkup(
-        keyboard=[
-            [KeyboardButton(text="Qarz Berish"), KeyboardButton(text="Qarzlar ro'yxati")],
-            [KeyboardButton(text="Qarzni o'chirish(To'lash)")],
-        ],
-        resize_keyboard=True,
-        input_field_placeholder="So'z yozing yoki tugmalardan birini bosing"
+    kb = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="📚 Lug‘atdan so‘rash", callback_data="search_word")],
+            [InlineKeyboardButton(text="📢 Obunani tekshirish", callback_data="check_subs")]
+        ]
     )
 
-    text = (
-        f"👋 Salom, {html.escape(user_name)}!\n\n"
+    await message.answer(
+        f"Salom, <b>{user_name}</b>!\n\n"
+        "🔹 Pastdagi tugmalardan birini tanlang yoki inglizcha so‘z yuboring:",
+        reply_markup=kb
     )
-
-    await message.answer(text, reply_markup=keyboard)

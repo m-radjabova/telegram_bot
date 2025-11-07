@@ -4,5 +4,6 @@ from os import getenv
 load_dotenv()
 
 BOT_TOKEN = getenv("BOT_TOKEN")
-PEXELS_API_KEY = getenv("PEXELS_API_KEY")
 channels = ["@idubiloveyouu"]
+DICTIONARY_API_KEY = getenv("DICTIONARY_API_KEY")
+DICTIONARY_API_ID = getenv("DICTIONARY_API_ID")

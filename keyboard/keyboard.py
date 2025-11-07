@@ -7,3 +7,4 @@ def sub_keyboard():
         buttons.append([InlineKeyboardButton(text=f"📢 {channel} ga a'zo bo'lish", url=f"https://t.me/{channel[1:]}")])
     buttons.append([InlineKeyboardButton(text="✅ Tekshirish", callback_data="check_subs")])
     return InlineKeyboardMarkup(inline_keyboard=buttons)
+
