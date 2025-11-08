@@ -17,14 +17,11 @@ dp = Dispatcher()
 dictionary = DictionaryAPI(DICTIONARY_API_KEY)
 router = Router()
 
-# --- Callback (lug‘atdan so‘rash) ---
 @router.callback_query(lambda c: c.data == "search_word")
 async def ask_word(callback: types.CallbackQuery):
     await callback.message.answer("✍️ Inglizcha so‘z yuboring (masalan: <b>example</b>)")
     await callback.answer()
 
-
-# --- Tarjima qabul qilish ---
 @router.message()
 async def translate_word(message: types.Message):
     word = message.text.strip().lower()
@@ -36,7 +33,6 @@ async def translate_word(message: types.Message):
 
     text = f"📖 <b>{word}</b>\n\n💬 <b>Tarjima:</b> {result}"
     await message.answer(text)
-
 
 async def main():
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
@@ -53,4 +49,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-

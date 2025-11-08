@@ -1,13 +1,11 @@
-# handlers/start.py
 from aiogram import Router, types, F
 from aiogram.filters import CommandStart
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from config import channels
-from main import bot  # faqat bot kerak, dp kerak emas
+from main import bot 
 
 router = Router()
 
-# --- Kanalga obuna tekshirish ---
 async def check_sub_channels(user_id):
     result = True
     for channel in channels:
@@ -17,7 +15,6 @@ async def check_sub_channels(user_id):
     return result
 
 
-# --- "Obunani tekshirish" tugmasi ---
 @router.callback_query(F.data == "check_subs")
 async def check_subs_callback(callback: CallbackQuery):
     if await check_sub_channels(callback.from_user.id):
@@ -26,7 +23,6 @@ async def check_subs_callback(callback: CallbackQuery):
         await callback.answer("❌ Siz hali barcha kanallarga a'zo bo‘lmagansiz!", show_alert=True)
 
 
-# --- /start komandasi ---
 @router.message(CommandStart())
 async def command_start_handler(message: types.Message):
     user_name = message.from_user.full_name
